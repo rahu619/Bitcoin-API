@@ -21,14 +21,6 @@ namespace BitCoin.API.Services
             this._apiSetting = apiSettings?.Value ?? throw new ArgumentNullException(nameof(apiSettings));
         }
 
-        //public async Task<T> GetOrCreateAsync<T>(string key, T value)
-        //{
-        //    return await _memoryCache.GetOrCreateAsync<T>(key, entry =>
-        //    {
-        //        entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(this._apiSetting.Interval);
-        //    },);
-        //}
-
         public T Get<T>(string key)
         {
             if (_memoryCache.TryGetValue<T>(key, out T result))
