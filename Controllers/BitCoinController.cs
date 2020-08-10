@@ -18,7 +18,7 @@ namespace BitCoin.API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public Task<IActionResult> Get()
         {
             throw new NotImplementedException();
         }

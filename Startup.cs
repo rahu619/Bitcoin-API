@@ -1,13 +1,13 @@
 using BitCoin.API.Configuration;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Services;
-using DNTScheduler.Core;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -40,9 +40,17 @@ namespace BitCoin.API
             services.AddSingleton<ICacheProvider, CacheProvider>();
             services.AddSingleton(typeof(IRestService<>), typeof(RestService<>));
 
-            ConfigureAuthentication(services);
+            //ConfigureAuthentication(services);
             ConfigureBackgroundServices(services);
             SetupConfigurations(services);
+
+            services.AddLogging(opt =>
+            {
+                opt.AddConsole(c =>
+                {
+                    c.TimestampFormat = "[HH:mm:ss] ";
+                });
+            });
         }
 
         private void ConfigureAuthentication(IServiceCollection services)
@@ -66,18 +74,6 @@ namespace BitCoin.API
         private void ConfigureBackgroundServices(IServiceCollection services)
         {
             services.AddHostedService<BitCoinApiService>();
-
-            services.AddDNTScheduler(options =>
-            {
-                // DNTScheduler needs a ping service to keep it alive. Set it to false if you don't need it. Its default value is true.
-                options.AddPingTask = false;
-                options.AddScheduledTask<BitCoinApiService>(
-                    runAt: utcNow =>
-                    {
-                        return utcNow.Minute % 5 == 0;
-                    });
-
-            });
         }
 
         private void SetupConfigurations(IServiceCollection services)
@@ -108,7 +104,7 @@ namespace BitCoin.API
             });
 
             //for fetching the data in background
-            app.UseDNTScheduler();
+            //app.UseDNTScheduler();
         }
     }
 }
