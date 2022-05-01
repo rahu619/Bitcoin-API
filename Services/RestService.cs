@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 
 namespace BitCoin.API.Services
 {
-    public class RestService<T> : IRestService<T>, IDisposable
+    /// <summary>
+    /// Http client service
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public class HttpClientService<T> : IHttpClientService<T>
     {
         private readonly HttpClient _client;
 
-        public RestService()
+        public HttpClientService()
         {
             this._client = new HttpClient();
         }

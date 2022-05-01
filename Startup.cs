@@ -37,8 +37,8 @@ namespace BitCoin.API
             services.AddControllers();
             services.AddMemoryCache();
 
-            services.AddSingleton<ICacheProvider, CacheProvider>();
-            services.AddSingleton(typeof(IRestService<>), typeof(RestService<>));
+            services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+            services.AddSingleton(typeof(IHttpClientService<>), typeof(HttpClientService<>));
 
             //ConfigureAuthentication(services);
             ConfigureBackgroundServices(services);

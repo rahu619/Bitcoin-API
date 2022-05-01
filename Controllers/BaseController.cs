@@ -4,6 +4,10 @@ using System;
 
 namespace BitCoin.API.Controllers
 {
+    /// <summary>
+    /// The base controller
+    /// TODO: Authentication will be implemented here
+    /// </summary>
     [ApiController]
     [Route("api/v1/[Controller]")]
     public class BaseController : ControllerBase

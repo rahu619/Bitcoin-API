@@ -13,15 +13,19 @@ using System.Threading.Tasks;
 
 namespace BitCoin.API.Services
 {
+    /// <summary>
+    /// This hosted service will fetch latest historical values from the external Bitcoin API
+    /// at every <see cref="ExternalAPISettings.Interval"/> seconds
+    /// </summary>
     public class BitCoinApiService : BackgroundService
     {
-        private readonly IRestService<BitCoinPriceIndexModel> _consumerService;
+        private readonly IHttpClientService<BitCoinPriceIndexModel> _consumerService;
         private readonly ILogger<BitCoinApiService> _logger;
         private readonly ICacheProvider _cacheProvider;
         private readonly ExternalAPISettings _apiSetting;
 
 
-        public BitCoinApiService(IRestService<BitCoinPriceIndexModel> consumerService, ILogger<BitCoinApiService> logger, ICacheProvider cacheProvider, IOptions<ExternalAPISettings> apiSetting)
+        public BitCoinApiService(IHttpClientService<BitCoinPriceIndexModel> consumerService, ILogger<BitCoinApiService> logger, ICacheProvider cacheProvider, IOptions<ExternalAPISettings> apiSetting)
         {
             this._consumerService = consumerService;
             this._logger = logger;
@@ -30,6 +34,37 @@ namespace BitCoin.API.Services
 
         }
 
+        /// <summary>
+        ///  Background service starting point
+        /// </summary>
+        /// <param name="stoppingToken"></param>
+        /// <returns></returns>
+        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _logger.IncludeTimeStamp("Fetching data");
+
+            stoppingToken.Register(() =>
+                _logger.LogDebug($" Bitcoin.Api background task is stopping."));
+
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await RunAsBackground();
+
+                //delaying the next fetch operation by the configured interval value 
+                await Task.Delay(_apiSetting.Interval * 1000, stoppingToken);
+            }
+
+            //disposing the http client service on shutdown
+            _consumerService.Dispose();
+
+            _logger.LogDebug($"Bitcoin.Api background task is stopping.");
+
+        }
+
+        /// <summary>
+        /// Fetches the Bitcoin historical API details
+        /// </summary>
+        /// <returns></returns>
         private async Task RunAsBackground()
         {
             //Gets the result set in reverse chronological order
@@ -39,7 +74,10 @@ namespace BitCoin.API.Services
             await backgroundTask;
         }
 
-
+        /// <summary>
+        /// Maps the obtained json content to <see cref="BitCoinPriceIndexHistoryModel"/> model
+        /// </summary>
+        /// <param name="data"></param>
         private void Process(BitCoinPriceIndexModel data)
         {
             var datePriceCollection = data?.BitCoinPriceIndexHistory;
@@ -61,30 +99,14 @@ namespace BitCoin.API.Services
                              });
 
             if (resultSet is null)
-                return;
-
-            _cacheProvider.Set(Cache.API_LATEST, resultSet.Take(5));
-
-        }
-
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.IncludeTimeStamp("Fetching data");
-
-            stoppingToken.Register(() =>
-                _logger.LogDebug($" Bitcoin.Api background task is stopping."));
-
-            //await RunAsBackground();
-
-            while (!stoppingToken.IsCancellationRequested)
             {
-                await RunAsBackground();
-
-                //keeping the interval as seconds.
-                await Task.Delay(_apiSetting.Interval * 1000, stoppingToken);
+                _logger.LogWarning("Empty resultset returned.");
+                return;
             }
 
-            _logger.LogDebug($"Bitcoin.Api background task is stopping.");
+            //Retrieves the configured count from the resultset
+            //and sets it to cache
+            _cacheProvider.Set(Cache.API_LATEST, resultSet.Take(_apiSetting.Count));
 
         }
     }

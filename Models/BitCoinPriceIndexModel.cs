@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace BitCoin.API.Models
 {
+    /// <summary>
+    /// The DTO for Bitcoin price index model.
+    /// </summary>
     public class BitCoinPriceIndexModel
     {
         /// <summary>
@@ -25,6 +28,9 @@ namespace BitCoin.API.Models
 
     }
 
+    /// <summary>
+    /// DTO for bitcoin history
+    /// </summary>
     public class BitCoinPriceIndexHistoryModel
     {
         /// <summary>
@@ -38,7 +44,9 @@ namespace BitCoin.API.Models
         public decimal USD { get; set; }
 
     }
-
+    /// <summary>
+    /// DTO for updated time information
+    /// </summary>
     public class BitCoinPriceIndexTimeModel
     {
         /// <summary>

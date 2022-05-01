@@ -26,13 +26,16 @@ namespace BitCoin.API.Controllers
         /// <summary>
         /// Retrieves the latest Bitcoin Price Index values. 
         /// </summary>
-        /// <param name="count"></param>
         /// <returns></returns>
         [HttpGet("latest")]
         [Produces(typeof(IEnumerable<BitCoinPriceIndexHistoryModel>))]
         public IActionResult GetLatest()
         {
             var result = base._cacheProvider.Get<IEnumerable<BitCoinPriceIndexHistoryModel>>(Cache.API_LATEST);
+            if (result is null) {
+                return NotFound();
+            }
+
             return Ok(result);
         }
 
