@@ -1,6 +1,5 @@
 ﻿using BitCoin.API.Configuration;
 using BitCoin.API.Constants;
-using BitCoin.API.Extension;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Models;
 using Microsoft.Extensions.Hosting;
@@ -41,10 +40,9 @@ namespace BitCoin.API.Services
         /// <returns></returns>
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.IncludeTimeStamp("Fetching data");
+            _logger.LogInformation("Fetching data");
 
-            stoppingToken.Register(() =>
-                _logger.LogDebug($" Bitcoin.Api background task is stopping."));
+            stoppingToken.Register(() => _logger.LogDebug($" Bitcoin API background task is stopping"));
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -57,7 +55,7 @@ namespace BitCoin.API.Services
             //disposing the http client service on shutdown
             _consumerService.Dispose();
 
-            _logger.LogDebug($"Bitcoin.Api background task is stopping.");
+            _logger.LogDebug($"Bitcoin API task is stopping");
 
         }
 
@@ -88,7 +86,7 @@ namespace BitCoin.API.Services
                 return;
             }
 
-            _logger.IncludeTimeStamp($"Bitcoin.Api task doing background work.");
+            _logger.LogInformation("Bitcoin API task running");
 
             var resultSet = (from filter in datePriceCollection
                              orderby filter.Key descending
@@ -100,7 +98,7 @@ namespace BitCoin.API.Services
 
             if (resultSet is null)
             {
-                _logger.LogWarning("Empty resultset returned.");
+                _logger.LogWarning("Empty Resultset returned!");
                 return;
             }
 

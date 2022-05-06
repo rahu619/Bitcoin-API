@@ -1,13 +1,14 @@
 using BitCoin.API.Configuration;
+using BitCoin.API.Interceptors;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Services;
+using Castle.DynamicProxy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -37,20 +38,15 @@ namespace BitCoin.API
             services.AddControllers();
             services.AddMemoryCache();
 
-            services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+            //services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+            services.AddInterceptedSingleton<ICacheProvider, InMemoryCacheProvider, DiagnosticsInterceptor>();
+
             services.AddSingleton(typeof(IHttpClientService<>), typeof(HttpClientService<>));
 
             //ConfigureAuthentication(services);
             ConfigureBackgroundServices(services);
             SetupConfigurations(services);
 
-            services.AddLogging(opt =>
-            {
-                opt.AddConsole(c =>
-                {
-                    c.TimestampFormat = "[HH:mm:ss] ";
-                });
-            });
         }
 
         private void ConfigureAuthentication(IServiceCollection services)
@@ -102,9 +98,6 @@ namespace BitCoin.API
             {
                 endpoints.MapControllers();
             });
-
-            //for fetching the data in background
-            //app.UseDNTScheduler();
         }
     }
 }
