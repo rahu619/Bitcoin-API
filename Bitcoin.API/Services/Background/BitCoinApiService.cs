@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,12 +20,15 @@ namespace BitCoin.API.Services
     public class BitCoinApiService : BackgroundService
     {
         private readonly IHttpClientService<BitCoinPriceIndexModel> _consumerService;
-        private readonly ILogger<BitCoinApiService> _logger;
+        private readonly ILogger _logger;
         private readonly ICacheProvider _cacheProvider;
         private readonly ExternalAPISettings _apiSetting;
+        private IEnumerable<BitCoinPriceIndexHistoryModel> _result;
 
-
-        public BitCoinApiService(IHttpClientService<BitCoinPriceIndexModel> consumerService, ILogger<BitCoinApiService> logger, ICacheProvider cacheProvider, IOptions<ExternalAPISettings> apiSetting)
+        public BitCoinApiService(IHttpClientService<BitCoinPriceIndexModel> consumerService,
+                                 ILogger<BitCoinApiService> logger,
+                                 ICacheProvider cacheProvider, 
+                                 IOptions<ExternalAPISettings> apiSetting)
         {
             this._consumerService = consumerService;
             this._logger = logger;
@@ -66,24 +70,29 @@ namespace BitCoin.API.Services
         private async Task RunAsBackground()
         {
             //Gets the result set in reverse chronological order
-            var backgroundTask = _consumerService.GetContent(_apiSetting.Url.Historical)
-                                                  .ContinueWith(task => Process(task.Result));
+            _result = await _consumerService.GetContent(_apiSetting.Url.Historical)
+                                            .ContinueWith(task => FilterContent(task.Result));
 
-            await backgroundTask;
+            _logger.LogDebug("Fetched {Count} items from Bitcoin API", _result.Count());
+
+            //Retrieves the configured count from the resultset
+            //and sets it to cache
+            _cacheProvider.Set(Cache.API_LATEST, _result);
+
         }
 
         /// <summary>
         /// Maps the obtained json content to <see cref="BitCoinPriceIndexHistoryModel"/> model
         /// </summary>
         /// <param name="data"></param>
-        private void Process(BitCoinPriceIndexModel data)
+        private IEnumerable<BitCoinPriceIndexHistoryModel> FilterContent(BitCoinPriceIndexModel data)
         {
             var datePriceCollection = data?.BitCoinPriceIndexHistory;
 
             if (datePriceCollection is null)
             {
                 _logger.LogError("No data found!");
-                return;
+                return default;
             }
 
             _logger.LogInformation("Bitcoin API task running");
@@ -99,12 +108,10 @@ namespace BitCoin.API.Services
             if (resultSet is null)
             {
                 _logger.LogWarning("Empty Resultset returned!");
-                return;
+                return default;
             }
 
-            //Retrieves the configured count from the resultset
-            //and sets it to cache
-            _cacheProvider.Set(Cache.API_LATEST, resultSet.Take(_apiSetting.Count));
+           return resultSet.Take(_apiSetting.Count);
 
         }
     }
