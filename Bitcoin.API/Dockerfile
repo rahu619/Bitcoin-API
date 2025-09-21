@@ -1,8 +1,18 @@
-FROM mcr.microsoft.com/dotnet/sdk:5.0 AS build-env
+# syntax=docker/dockerfile:1
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
+EXPOSE 8080
+EXPOSE 8443
 
-COPY *.csproj ./
-RUN dotnet restore
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY ["BitCoin.API.csproj", "./"]
+RUN dotnet restore "BitCoin.API.csproj"
+COPY . .
+RUN dotnet publish "BitCoin.API.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-COPY . ./
-
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "BitCoin.API.dll"]

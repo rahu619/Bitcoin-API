@@ -1,26 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using BitCoin.API.Configuration;
+using BitCoin.API.Interfaces;
+using BitCoin.API.Services;
 
-namespace BitCoin.API
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
 {
-    public class Program
+    options.AddDefaultPolicy(policyBuilder =>
     {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
+        policyBuilder
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMemoryCache();
+builder.Services.AddAuthorization();
+builder.Services.AddProblemDetails();
+
+builder.Services
+    .AddOptions<ExternalAPISettings>()
+    .Bind(builder.Configuration.GetSection("ExternalAPISettings"))
+    .ValidateDataAnnotations()
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Url?.Historical),
+        "The external API historical URL must be configured.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+builder.Services.AddHttpClient(typeof(IHttpClientService<>), typeof(HttpClientService<>))
+    .SetHandlerLifetime(TimeSpan.FromMinutes(5));
+builder.Services.AddHostedService<BitCoinApiService>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
 }
+else
+{
+    app.UseExceptionHandler();
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseCors();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();

@@ -1,23 +1,23 @@
-﻿using BitCoin.API.Interfaces;
+using BitCoin.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
-namespace BitCoin.API.Controllers
+namespace BitCoin.API.Controllers;
+
+/// <summary>
+/// Provides common functionality for API controllers.
+/// </summary>
+[ApiController]
+[Route("api/v1/[controller]")]
+public abstract class BaseController : ControllerBase
 {
-    /// <summary>
-    /// The base controller
-    /// TODO: Authentication will be implemented here
-    /// </summary>
-    [ApiController]
-    [Route("api/v1/[Controller]")]
-    public class BaseController : ControllerBase
+    protected BaseController(ICacheProvider cacheProvider)
     {
-        protected readonly ICacheProvider _cacheProvider;
-
-        public BaseController(ICacheProvider cacheProvider)
-        {
-            this._cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(_cacheProvider));
-        }
-
+        ArgumentNullException.ThrowIfNull(cacheProvider);
+        CacheProvider = cacheProvider;
     }
+
+    /// <summary>
+    /// Gets the cache provider associated with the controller.
+    /// </summary>
+    protected ICacheProvider CacheProvider { get; }
 }

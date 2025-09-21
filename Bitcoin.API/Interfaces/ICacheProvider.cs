@@ -1,12 +1,11 @@
-﻿namespace BitCoin.API.Interfaces
+namespace BitCoin.API.Interfaces;
+
+/// <summary>
+/// Interface for the cache provider.
+/// </summary>
+public interface ICacheProvider
 {
-    /// <summary>
-    /// Interface for the cache provider.
-    /// </summary>
-    public interface ICacheProvider
-    {
-        T Get<T>(string key);
-        void Set<T>(string key, T value);
-        void Reset();
-    }
+    T? Get<T>(string key);
+    void Set<T>(string key, T value);
+    void Reset();
 }

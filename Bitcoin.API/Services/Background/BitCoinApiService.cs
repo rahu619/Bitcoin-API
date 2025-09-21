@@ -1,118 +1,153 @@
-﻿using BitCoin.API.Configuration;
-using BitCoin.API.Constants;
-using BitCoin.API.Interfaces;
-using BitCoin.API.Models;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BitCoin.API.Services
+using BitCoin.API.Configuration;
+using BitCoin.API.Constants;
+using BitCoin.API.Interfaces;
+using BitCoin.API.Models;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+
+namespace BitCoin.API.Services;
+
+/// <summary>
+/// Hosted service that periodically retrieves Bitcoin price index data and caches the result.
+/// </summary>
+public sealed class BitCoinApiService : BackgroundService
 {
+    private static readonly IReadOnlyList<BitCoinPriceIndexHistoryModel> EmptyResult = Array.Empty<BitCoinPriceIndexHistoryModel>();
+
+    private readonly ICacheProvider _cacheProvider;
+    private readonly IHttpClientService<BitCoinPriceIndexModel> _consumerService;
+    private readonly ILogger<BitCoinApiService> _logger;
+    private readonly ExternalAPISettings _apiSettings;
+
+    private IReadOnlyList<BitCoinPriceIndexHistoryModel> _latestResult = EmptyResult;
+
     /// <summary>
-    /// This hosted service will fetch latest historical values from the external Bitcoin API
-    /// at every <see cref="ExternalAPISettings.Interval"/> seconds
+    /// Gets the most recently retrieved Bitcoin price index snapshot.
     /// </summary>
-    public class BitCoinApiService : BackgroundService
+    internal IReadOnlyList<BitCoinPriceIndexHistoryModel> LatestResult => Volatile.Read(ref _latestResult);
+
+    public BitCoinApiService(
+        IHttpClientService<BitCoinPriceIndexModel> consumerService,
+        ILogger<BitCoinApiService> logger,
+        ICacheProvider cacheProvider,
+        IOptions<ExternalAPISettings> apiSettings)
     {
-        private readonly IHttpClientService<BitCoinPriceIndexModel> _consumerService;
-        private readonly ILogger _logger;
-        private readonly ICacheProvider _cacheProvider;
-        private readonly ExternalAPISettings _apiSetting;
-        private IEnumerable<BitCoinPriceIndexHistoryModel> _result;
+        _consumerService = consumerService ?? throw new ArgumentNullException(nameof(consumerService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
+        _apiSettings = apiSettings?.Value ?? throw new ArgumentNullException(nameof(apiSettings));
+    }
 
-        public BitCoinApiService(IHttpClientService<BitCoinPriceIndexModel> consumerService,
-                                 ILogger<BitCoinApiService> logger,
-                                 ICacheProvider cacheProvider, 
-                                 IOptions<ExternalAPISettings> apiSetting)
+    /// <inheritdoc />
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _logger.LogInformation("Starting Bitcoin API background service.");
+
+        try
         {
-            this._consumerService = consumerService;
-            this._logger = logger;
-            this._cacheProvider = cacheProvider;
-            this._apiSetting = apiSetting?.Value ?? throw new ArgumentNullException(nameof(apiSetting));
-
-        }
-
-        /// <summary>
-        ///  Background service starting point
-        /// </summary>
-        /// <param name="stoppingToken"></param>
-        /// <returns></returns>
-        protected async override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _logger.LogInformation("Fetching data");
-
-            stoppingToken.Register(() => _logger.LogDebug($" Bitcoin API background task is stopping"));
+            using var timer = new PeriodicTimer(GetPollingInterval());
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await RunAsBackground();
+                try
+                {
+                    await ExecuteIterationAsync(stoppingToken).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "An error occurred while retrieving Bitcoin price index data.");
+                }
 
-                //delaying the next fetch operation by the configured interval value 
-                await Task.Delay(_apiSetting.Interval * 1000, stoppingToken);
+                if (!await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false))
+                {
+                    break;
+                }
             }
-
-            //disposing the http client service on shutdown
-            _consumerService.Dispose();
-
-            _logger.LogDebug($"Bitcoin API task is stopping");
-
         }
-
-        /// <summary>
-        /// Fetches the Bitcoin historical API details
-        /// </summary>
-        /// <returns></returns>
-        private async Task RunAsBackground()
+        finally
         {
-            //Gets the result set in reverse chronological order
-            _result = await _consumerService.GetContent(_apiSetting.Url.Historical)
-                                            .ContinueWith(task => FilterContent(task.Result));
-
-            _logger.LogDebug("Fetched {Count} items from Bitcoin API", _result.Count());
-
-            //Retrieves the configured count from the resultset
-            //and sets it to cache
-            _cacheProvider.Set(Cache.API_LATEST, _result);
-
+            _logger.LogDebug("Bitcoin API task stopped.");
         }
+    }
 
-        /// <summary>
-        /// Maps the obtained json content to <see cref="BitCoinPriceIndexHistoryModel"/> model
-        /// </summary>
-        /// <param name="data"></param>
-        private IEnumerable<BitCoinPriceIndexHistoryModel> FilterContent(BitCoinPriceIndexModel data)
+    /// <summary>
+    /// Fetches the Bitcoin historical API details and stores the latest values in cache.
+    /// </summary>
+    internal async Task ExecuteIterationAsync(CancellationToken cancellationToken = default)
+    {
+        var apiUrl = _apiSettings.Url?.Historical;
+
+        if (string.IsNullOrWhiteSpace(apiUrl))
         {
-            var datePriceCollection = data?.BitCoinPriceIndexHistory;
-
-            if (datePriceCollection is null)
-            {
-                _logger.LogError("No data found!");
-                return default;
-            }
-
-            _logger.LogInformation("Bitcoin API task running");
-
-            var resultSet = (from filter in datePriceCollection
-                             orderby filter.Key descending
-                             select new BitCoinPriceIndexHistoryModel
-                             {
-                                 Date = filter.Key,
-                                 USD = filter.Value
-                             });
-
-            if (resultSet is null)
-            {
-                _logger.LogWarning("Empty Resultset returned!");
-                return default;
-            }
-
-           return resultSet.Take(_apiSetting.Count);
-
+            _logger.LogError("Bitcoin API URL is not configured.");
+            return;
         }
+
+        var content = await _consumerService.GetContentAsync(apiUrl, cancellationToken).ConfigureAwait(false);
+        var filtered = FilterContent(content);
+
+        if (filtered.Count == 0)
+        {
+            _logger.LogWarning("No Bitcoin price index data was retrieved.");
+            return;
+        }
+
+        Volatile.Write(ref _latestResult, filtered);
+        _cacheProvider.Set(CacheKeys.ApiLatest, filtered);
+        _logger.LogDebug("Fetched {Count} items from Bitcoin API.", filtered.Count);
+    }
+
+    /// <summary>
+    /// Maps the obtained json content to <see cref="BitCoinPriceIndexHistoryModel"/> instances.
+    /// </summary>
+    /// <param name="data">The raw API response.</param>
+    private IReadOnlyList<BitCoinPriceIndexHistoryModel> FilterContent(BitCoinPriceIndexModel? data)
+    {
+        if (data?.BitCoinPriceIndexHistory is not { Count: > 0 } datePriceCollection)
+        {
+            _logger.LogError("No data found while mapping Bitcoin API response.");
+            return EmptyResult;
+        }
+
+        if (_apiSettings.Count <= 0)
+        {
+            _logger.LogWarning("Configured result count is not positive. No data will be cached.");
+            return EmptyResult;
+        }
+
+        _logger.LogInformation("Bitcoin API task running.");
+
+        var resultCount = Math.Min(_apiSettings.Count, datePriceCollection.Count);
+        var results = new List<BitCoinPriceIndexHistoryModel>(resultCount);
+
+        foreach (var (date, value) in datePriceCollection
+                     .OrderByDescending(pair => pair.Key, StringComparer.Ordinal)
+                     .Take(resultCount))
+        {
+            results.Add(new BitCoinPriceIndexHistoryModel
+            {
+                Date = date,
+                USD = value
+            });
+        }
+
+        return results;
+    }
+
+    private TimeSpan GetPollingInterval()
+    {
+        var seconds = Math.Max(1, _apiSettings.Interval);
+        return TimeSpan.FromSeconds(seconds);
     }
 }

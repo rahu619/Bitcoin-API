@@ -1,44 +1,37 @@
-﻿using BitCoin.API.Constants;
+using System.Collections.Generic;
+
+using BitCoin.API.Constants;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace BitCoin.API.Controllers
 {
     public class BitCoinController : BaseController
     {
-        public BitCoinController(ICacheProvider cacheProvider) : base(cacheProvider) { }
-
-
-        /// <summary>
-        /// Gets all value from the Bitcoin Price Index
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public Task<IActionResult> Get()
+        public BitCoinController(ICacheProvider cacheProvider)
+            : base(cacheProvider)
         {
-            throw new NotImplementedException();
         }
 
         /// <summary>
-        /// Retrieves the latest Bitcoin Price Index values. 
+        /// Retrieves the latest Bitcoin Price Index values.
         /// </summary>
-        /// <returns></returns>
+        [HttpGet]
         [HttpGet("latest")]
-        [Produces(typeof(IEnumerable<BitCoinPriceIndexHistoryModel>))]
-        public IActionResult GetLatest()
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult<IReadOnlyList<BitCoinPriceIndexHistoryModel>> GetLatest()
         {
-            var result = base._cacheProvider.Get<IEnumerable<BitCoinPriceIndexHistoryModel>>(Cache.API_LATEST);
-            if (result is null) {
+            var result = CacheProvider.Get<IReadOnlyList<BitCoinPriceIndexHistoryModel>>(CacheKeys.ApiLatest);
+
+            if (result is null || result.Count == 0)
+            {
                 return NotFound();
             }
 
             return Ok(result);
         }
-
-
     }
 }
