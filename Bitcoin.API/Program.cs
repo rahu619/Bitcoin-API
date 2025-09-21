@@ -1,26 +1,95 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Net;
+using System.Net.Http;
 
-namespace BitCoin.API
+using BitCoin.API.Configuration;
+using BitCoin.API.Interfaces;
+using BitCoin.API.Services;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Extensions.Http;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
 {
-    public class Program
+    options.AddDefaultPolicy(policyBuilder =>
     {
-        public static void Main(string[] args)
+        policyBuilder
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddMemoryCache();
+builder.Services.AddAuthorization();
+builder.Services.AddProblemDetails();
+
+builder.Services
+    .AddOptions<ExternalAPISettings>()
+    .Bind(builder.Configuration.GetSection("ExternalAPISettings"))
+    .ValidateDataAnnotations()
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Url?.Historical),
+        "The external API historical URL must be configured.")
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Url?.Base),
+        "The external API base URL must be configured.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+builder.Services
+    .AddHttpClient<IBitcoinPriceIndexClient, BitcoinPriceIndexClient>("BitcoinPriceIndex")
+    .ConfigureHttpClient((sp, client) =>
+    {
+        var options = sp.GetRequiredService<IOptions<ExternalAPISettings>>().Value;
+        var baseAddress = options.Url?.Base;
+
+        if (string.IsNullOrWhiteSpace(baseAddress))
         {
-            CreateHostBuilder(args).Build().Run();
+            throw new InvalidOperationException("The external API base URL must be configured.");
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+        client.BaseAddress = new Uri(baseAddress, UriKind.Absolute);
+        client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+    })
+    .AddPolicyHandler(GetRetryPolicy())
+    .AddPolicyHandler(GetCircuitBreakerPolicy());
+builder.Services.AddHostedService<BitCoinApiService>();
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseExceptionHandler();
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseCors();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();
+
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .OrResult(message => message.StatusCode == HttpStatusCode.TooManyRequests)
+        .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+}
+
+static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
 }

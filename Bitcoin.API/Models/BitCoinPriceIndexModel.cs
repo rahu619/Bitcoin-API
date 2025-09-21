@@ -1,64 +1,62 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace BitCoin.API.Models
+namespace BitCoin.API.Models;
+
+/// <summary>
+/// The DTO for Bitcoin price index model.
+/// </summary>
+public sealed record class BitCoinPriceIndexModel
 {
     /// <summary>
-    /// The DTO for Bitcoin price index model.
+    /// Collection of historical data
     /// </summary>
-    public class BitCoinPriceIndexModel
-    {
-        /// <summary>
-        /// Collection of historical data
-        /// </summary>
-        [JsonPropertyName("bpi")]
-        public Dictionary<string, decimal> BitCoinPriceIndexHistory { get; set; }
-
-        /// <summary>
-        /// Disclaimer detail
-        /// </summary>
-        [JsonPropertyName("disclaimer")]
-        public string Disclaimer { get; set; }
-
-        /// <summary>
-        /// Published time details
-        /// </summary>
-        [JsonPropertyName("time")]
-        public BitCoinPriceIndexTimeModel BitCoinPriceIndexTime { get; set; }
-
-    }
+    [JsonPropertyName("bpi")]
+    public IReadOnlyDictionary<string, decimal>? BitCoinPriceIndexHistory { get; init; }
 
     /// <summary>
-    /// DTO for bitcoin history
+    /// Disclaimer detail
     /// </summary>
-    public class BitCoinPriceIndexHistoryModel
-    {
-        /// <summary>
-        /// The updated date
-        /// </summary>
-        public string Date { get; set; }
+    [JsonPropertyName("disclaimer")]
+    public string? Disclaimer { get; init; }
 
-        /// <summary>
-        /// The US Dollar value 
-        /// </summary>
-        public decimal USD { get; set; }
-
-    }
     /// <summary>
-    /// DTO for updated time information
+    /// Published time details
     /// </summary>
-    public class BitCoinPriceIndexTimeModel
-    {
-        /// <summary>
-        /// The published datetime
-        /// </summary>
-        [JsonPropertyName("updated")]
-        public string Updated { get; set; }
+    [JsonPropertyName("time")]
+    public BitCoinPriceIndexTimeModel? BitCoinPriceIndexTime { get; init; }
+}
 
-        /// <summary>
-        /// The publiched datetime in ISO string format.
-        /// </summary>
-        [JsonPropertyName("updatedISO")]
-        public string UpdatedISO { get; set; }
-    }
+/// <summary>
+/// DTO for bitcoin history
+/// </summary>
+public sealed record class BitCoinPriceIndexHistoryModel
+{
+    /// <summary>
+    /// The updated date
+    /// </summary>
+    public string? Date { get; init; }
+
+    /// <summary>
+    /// The US Dollar value
+    /// </summary>
+    public decimal USD { get; init; }
+}
+
+/// <summary>
+/// DTO for updated time information
+/// </summary>
+public sealed record class BitCoinPriceIndexTimeModel
+{
+    /// <summary>
+    /// The published datetime
+    /// </summary>
+    [JsonPropertyName("updated")]
+    public string? Updated { get; init; }
+
+    /// <summary>
+    /// The publiched datetime in ISO string format.
+    /// </summary>
+    [JsonPropertyName("updatedISO")]
+    public string? UpdatedISO { get; init; }
 }

@@ -1,7 +1,7 @@
-﻿namespace BitCoin.API.Constants
+namespace BitCoin.API.Constants
 {
-    public class Cache
+    public static class CacheKeys
     {
-        public const string API_LATEST = "Latest.Values";
+        public const string ApiLatest = "Latest.Values";
     }
 }
