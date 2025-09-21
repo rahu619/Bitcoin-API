@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Text.Json;
 
 using BitCoin.API.Configuration;
 using BitCoin.API.Constants;
@@ -29,8 +27,7 @@ public class CoreTest
         var mockLogger = new Mock<ILogger<BitCoinApiService>>();
         var mockCacheProvider = new Mock<ICacheProvider>();
 
-        using var httpClient = new HttpClient(new StubHttpMessageHandler(HistoricalPayload));
-        var httpClientService = new HttpClientService<BitCoinPriceIndexModel>(httpClient);
+        var priceIndexClient = new StubBitcoinPriceIndexClient(HistoricalPayload);
 
         var externalApiSetting = new ExternalAPISettings
         {
@@ -40,7 +37,7 @@ public class CoreTest
         };
 
         var backgroundService = new BitCoinApiService(
-            httpClientService,
+            priceIndexClient,
             mockLogger.Object,
             mockCacheProvider.Object,
             Options.Create(externalApiSetting));
@@ -59,23 +56,21 @@ public class CoreTest
             Times.Once);
     }
 
-    private sealed class StubHttpMessageHandler : HttpMessageHandler
+    private sealed class StubBitcoinPriceIndexClient : IBitcoinPriceIndexClient
     {
-        private readonly string _payload;
-
-        public StubHttpMessageHandler(string payload)
+        private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
         {
-            _payload = payload;
+            PropertyNameCaseInsensitive = true
+        };
+
+        private readonly BitCoinPriceIndexModel? _payload;
+
+        public StubBitcoinPriceIndexClient(string payload)
+        {
+            _payload = JsonSerializer.Deserialize<BitCoinPriceIndexModel>(payload, SerializerOptions);
         }
 
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(_payload, Encoding.UTF8, "application/json")
-            };
-
-            return Task.FromResult(response);
-        }
+        public Task<BitCoinPriceIndexModel?> GetHistoricalAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(_payload);
     }
 }

@@ -22,7 +22,7 @@ public sealed class BitCoinApiService : BackgroundService
     private static readonly IReadOnlyList<BitCoinPriceIndexHistoryModel> EmptyResult = Array.Empty<BitCoinPriceIndexHistoryModel>();
 
     private readonly ICacheProvider _cacheProvider;
-    private readonly IHttpClientService<BitCoinPriceIndexModel> _consumerService;
+    private readonly IBitcoinPriceIndexClient _priceIndexClient;
     private readonly ILogger<BitCoinApiService> _logger;
     private readonly ExternalAPISettings _apiSettings;
 
@@ -34,12 +34,12 @@ public sealed class BitCoinApiService : BackgroundService
     internal IReadOnlyList<BitCoinPriceIndexHistoryModel> LatestResult => Volatile.Read(ref _latestResult);
 
     public BitCoinApiService(
-        IHttpClientService<BitCoinPriceIndexModel> consumerService,
+        IBitcoinPriceIndexClient priceIndexClient,
         ILogger<BitCoinApiService> logger,
         ICacheProvider cacheProvider,
         IOptions<ExternalAPISettings> apiSettings)
     {
-        _consumerService = consumerService ?? throw new ArgumentNullException(nameof(consumerService));
+        _priceIndexClient = priceIndexClient ?? throw new ArgumentNullException(nameof(priceIndexClient));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
         _apiSettings = apiSettings?.Value ?? throw new ArgumentNullException(nameof(apiSettings));
@@ -86,15 +86,7 @@ public sealed class BitCoinApiService : BackgroundService
     /// </summary>
     internal async Task ExecuteIterationAsync(CancellationToken cancellationToken = default)
     {
-        var apiUrl = _apiSettings.Url?.Historical;
-
-        if (string.IsNullOrWhiteSpace(apiUrl))
-        {
-            _logger.LogError("Bitcoin API URL is not configured.");
-            return;
-        }
-
-        var content = await _consumerService.GetContentAsync(apiUrl, cancellationToken).ConfigureAwait(false);
+        var content = await _priceIndexClient.GetHistoricalAsync(cancellationToken).ConfigureAwait(false);
         var filtered = FilterContent(content);
 
         if (filtered.Count == 0)
