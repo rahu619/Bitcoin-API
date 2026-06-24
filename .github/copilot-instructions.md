@@ -11,5 +11,5 @@
 3. Summarize behavior changes and any known limitations.
 
 ## Repository-specific checks
-- Use `dotnet test Bitcoin.API.Test/*.csproj` for test validation.
+- Use `dotnet test Bitcoin.API.Test` for test validation.
 - If solution-level test fails due to path mismatch, use the project-level test command above.
