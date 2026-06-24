@@ -25,4 +25,6 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore solution dependencies
-        run: dotnet restore Bitcoin.API.Test
+        run: |
+          project_file=$(find Bitcoin.API.Test -maxdepth 1 -name '*.csproj' | head -n 1)
+          dotnet restore "$project_file"
