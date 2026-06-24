@@ -25,4 +25,4 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore solution dependencies
-        run: dotnet restore /home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API.Test/BitCoin.API.Test.csproj
+        run: dotnet restore Bitcoin.API.Test/BitCoin.API.Test.csproj
