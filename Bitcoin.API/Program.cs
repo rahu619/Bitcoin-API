@@ -33,11 +33,8 @@ builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
-        if (jwtSettings is null || string.IsNullOrWhiteSpace(jwtSettings.Key) || string.IsNullOrWhiteSpace(jwtSettings.Issuer) || string.IsNullOrWhiteSpace(jwtSettings.Audience))
-        {
-            throw new InvalidOperationException("JWT authentication settings are missing.");
-        }
+        var jwtSettings = builder.Configuration.GetRequiredSection("Jwt").Get<JwtSettings>()
+            ?? throw new InvalidOperationException("JWT authentication settings are missing.");
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
