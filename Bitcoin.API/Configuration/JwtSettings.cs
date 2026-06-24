@@ -14,4 +14,9 @@ public class JwtSettings
     /// The expected token issuer.
     /// </summary>
     public string Issuer { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The expected token audience.
+    /// </summary>
+    public string Audience { get; set; } = string.Empty;
 }

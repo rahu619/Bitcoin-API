@@ -34,7 +34,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>();
-        if (jwtSettings is null || string.IsNullOrWhiteSpace(jwtSettings.Key) || string.IsNullOrWhiteSpace(jwtSettings.Issuer))
+        if (jwtSettings is null || string.IsNullOrWhiteSpace(jwtSettings.Key) || string.IsNullOrWhiteSpace(jwtSettings.Issuer) || string.IsNullOrWhiteSpace(jwtSettings.Audience))
         {
             throw new InvalidOperationException("JWT authentication settings are missing.");
         }
@@ -45,7 +45,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
             ValidateIssuer = true,
             ValidIssuer = jwtSettings.Issuer,
-            ValidateAudience = false,
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
             ValidateLifetime = true
         };
     });
@@ -80,6 +81,9 @@ builder.Services
     .Validate(
         settings => !string.IsNullOrWhiteSpace(settings.Issuer),
         "The JWT issuer must be configured.")
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Audience),
+        "The JWT audience must be configured.")
     .ValidateOnStart();
 
 builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
