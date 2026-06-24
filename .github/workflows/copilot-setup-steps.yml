@@ -28,9 +28,13 @@ jobs:
 
       - name: Restore solution dependencies
         run: |
+          if [ ! -d "$TEST_PROJECT_DIR" ]; then
+            echo "Configured test project directory '$TEST_PROJECT_DIR' does not exist."
+            exit 1
+          fi
           project_file=$(find "$TEST_PROJECT_DIR" -maxdepth 1 -name '*.csproj' | head -n 1)
           if [ -z "$project_file" ]; then
-            echo "No test project file found under '$TEST_PROJECT_DIR' using pattern '*.csproj'."
+            echo "No '*.csproj' file found in existing directory '$TEST_PROJECT_DIR'. Add a project file or update TEST_PROJECT_DIR."
             exit 1
           fi
           dotnet restore "$project_file"
