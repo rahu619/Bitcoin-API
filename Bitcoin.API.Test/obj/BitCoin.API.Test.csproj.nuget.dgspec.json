@@ -1,38 +1,33 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\BitCoin.API.Test\\BitCoin.API.Test.csproj": {}
+    "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API.Test/BitCoin.API.Test.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\BitCoin.API.Test\\BitCoin.API.Test.csproj": {
+    "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API.Test/BitCoin.API.Test.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\BitCoin.API.Test\\BitCoin.API.Test.csproj",
+        "projectUniqueName": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API.Test/BitCoin.API.Test.csproj",
         "projectName": "BitCoin.API.Test",
-        "projectPath": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\BitCoin.API.Test\\BitCoin.API.Test.csproj",
-        "packagesPath": "C:\\Users\\Dev_Me\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\BitCoin.API.Test\\obj\\",
+        "projectPath": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API.Test/BitCoin.API.Test.csproj",
+        "packagesPath": "/tmp/codeql-scratch-a34d3cb772405a77/dbs/csharp/working/packages",
+        "outputPath": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API.Test/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Dev_Me\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "netcoreapp3.1"
+          "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netcoreapp3.1": {
-            "targetAlias": "netcoreapp3.1",
+          "net10.0": {
+            "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\bitcoin.api\\BitCoin.API.csproj": {
-                "projectPath": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\bitcoin.api\\BitCoin.API.csproj"
+              "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/BitCoin.API.csproj": {
+                "projectPath": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/BitCoin.API.csproj"
               }
             }
           }
@@ -41,31 +36,37 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "netcoreapp3.1": {
-          "targetAlias": "netcoreapp3.1",
+        "net10.0": {
+          "targetAlias": "net10.0",
           "dependencies": {
             "MSTest.TestAdapter": {
               "target": "Package",
-              "version": "[2.2.7, )"
+              "version": "[4.1.0, )"
             },
             "MSTest.TestFramework": {
               "target": "Package",
-              "version": "[2.2.7, )"
+              "version": "[4.1.0, )"
             },
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
-              "version": "[16.11.0, )"
+              "version": "[18.3.0, )"
             },
             "Moq": {
               "target": "Package",
-              "version": "[4.17.2, )"
+              "version": "[4.20.72, )"
             },
             "coverlet.collector": {
               "target": "Package",
-              "version": "[3.1.0, )"
+              "version": "[8.0.0, )"
             }
           },
           "imports": [
@@ -74,45 +75,51 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[10.0.2, 10.0.2]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[10.0.2, 10.0.2]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\Bitcoin.API\\BitCoin.API.csproj": {
+    "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/BitCoin.API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\Bitcoin.API\\BitCoin.API.csproj",
+        "projectUniqueName": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/BitCoin.API.csproj",
         "projectName": "BitCoin.API",
-        "projectPath": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\Bitcoin.API\\BitCoin.API.csproj",
-        "packagesPath": "C:\\Users\\Dev_Me\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Dev_Me\\source\\repos\\bitcoin.api\\Bitcoin.API\\obj\\",
+        "projectPath": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/BitCoin.API.csproj",
+        "packagesPath": "/tmp/codeql-scratch-a34d3cb772405a77/dbs/csharp/working/packages",
+        "outputPath": "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Dev_Me\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/home/runner/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "netcoreapp3.1"
+          "net10.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "netcoreapp3.1": {
-            "targetAlias": "netcoreapp3.1",
+          "net10.0": {
+            "targetAlias": "net10.0",
             "projectReferences": {}
           }
         },
@@ -120,23 +127,33 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "netcoreapp3.1": {
-          "targetAlias": "netcoreapp3.1",
+        "net10.0": {
+          "targetAlias": "net10.0",
           "dependencies": {
-            "Castle.Core": {
+            "Microsoft.DotNet.ILCompiler": {
+              "suppressParent": "All",
               "target": "Package",
-              "version": "[4.4.1, )"
+              "version": "[10.0.2, )",
+              "autoReferenced": true
             },
-            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+            "Microsoft.Extensions.Http.Resilience": {
               "target": "Package",
-              "version": "[3.1.6, )"
+              "version": "[10.3.0, )"
             },
-            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
               "target": "Package",
-              "version": "[1.10.9, )"
+              "version": "[10.0.2, )",
+              "autoReferenced": true
             }
           },
           "imports": [
@@ -145,10 +162,29 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[10.0.2, 10.0.2]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.linux-x64",
+              "version": "[10.0.2, 10.0.2]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[10.0.2, 10.0.2]"
+            },
+            {
+              "name": "runtime.linux-x64.Microsoft.DotNet.ILCompiler",
+              "version": "[10.0.2, 10.0.2]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -157,7 +193,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
