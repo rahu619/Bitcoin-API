@@ -29,17 +29,17 @@ jobs:
       - name: Restore solution dependencies
         run: |
           if [ ! -d "$TEST_PROJECT_DIR" ]; then
-            echo "Configured test project directory '$TEST_PROJECT_DIR' does not exist."
+            echo "Configured test project directory $TEST_PROJECT_DIR does not exist."
             exit 1
           fi
           project_files=$(find "$TEST_PROJECT_DIR" -maxdepth 1 -type f -name '*.csproj' | sort)
           project_count=$(printf '%s\n' "$project_files" | sed '/^$/d' | wc -l)
           if [ "$project_count" -eq 0 ]; then
-            echo "No '*.csproj' file found in existing directory '$TEST_PROJECT_DIR'. Add a project file or update TEST_PROJECT_DIR."
+            echo "No *.csproj file found in existing directory $TEST_PROJECT_DIR. Add a project file or update TEST_PROJECT_DIR."
             exit 1
           fi
           if [ "$project_count" -gt 1 ]; then
-            echo "Multiple project files found in '$TEST_PROJECT_DIR'. Set TEST_PROJECT_DIR to a directory with one project."
+            echo "Multiple project files found in $TEST_PROJECT_DIR. Set TEST_PROJECT_DIR to a directory with one project."
             exit 1
           fi
           project_file="$project_files"
