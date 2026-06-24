@@ -12,4 +12,3 @@
 
 ## Repository-specific checks
 - Use `dotnet test Bitcoin.API.Test` for test validation.
-- If solution-level test fails due to path mismatch, rerun `dotnet test Bitcoin.API.Test`.
