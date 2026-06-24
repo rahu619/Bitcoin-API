@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using BitCoin.API.Configuration;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Models;
+using BitCoin.API.Serialization;
 using Microsoft.Extensions.Options;
 
 namespace BitCoin.API.Services;
@@ -16,11 +17,6 @@ namespace BitCoin.API.Services;
 /// </summary>
 public sealed class BitcoinPriceIndexClient : IBitcoinPriceIndexClient
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private readonly HttpClient _httpClient;
     private readonly string _historicalEndpoint;
 
@@ -53,7 +49,7 @@ public sealed class BitcoinPriceIndexClient : IBitcoinPriceIndexClient
 
         await using var contentStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
         return await JsonSerializer
-            .DeserializeAsync<BitCoinPriceIndexModel>(contentStream, SerializerOptions, cancellationToken)
+            .DeserializeAsync(contentStream, BitcoinApiJsonSerializerContext.Default.BitCoinPriceIndexModel, cancellationToken)
             .ConfigureAwait(false);
     }
 }

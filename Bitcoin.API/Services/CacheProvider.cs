@@ -42,7 +42,7 @@ public sealed class InMemoryCacheProvider : ICacheProvider
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
 
-        if (_memoryCache.TryGetValue(key, out T value))
+        if (_memoryCache.TryGetValue(key, out T? value))
         {
             return value;
         }
