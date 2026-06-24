@@ -8,3 +8,7 @@ API for retrieving the latest Bit coin price.
 ```cmd
 dotnet run
 ``` 
+
+## Authentication
+
+All API endpoints require a valid JWT bearer token in the `Authorization` header.
