@@ -10,6 +10,7 @@ WORKDIR /src
 COPY ["Directory.Build.props", "./"]
 COPY ["Directory.Packages.props", "./"]
 COPY ["src/Bitcoin.API/BitCoin.API.csproj", "src/Bitcoin.API/"]
+COPY ["src/BitCoin.ServiceDefaults/BitCoin.ServiceDefaults.csproj", "src/BitCoin.ServiceDefaults/"]
 RUN dotnet restore "src/Bitcoin.API/BitCoin.API.csproj"
 COPY . .
 RUN dotnet publish "src/Bitcoin.API/BitCoin.API.csproj" -c Release -o /app/publish -p:PublishAot=false
