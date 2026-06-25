@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "src/BitCoin.AppHost/BitCoin.AppHost.csproj"
+  }
+}

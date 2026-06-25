@@ -5,9 +5,18 @@ API for retrieving the latest Bit coin price.
 
 ## Usage
 
+Open this repository in a Dev Container (VS Code command: "Dev Containers: Reopen in Container").
+
 ```cmd
-dotnet run
+dotnet restore BitCoin.API.slnx
+dotnet run --project src/BitCoin.AppHost
 ``` 
+
+You can still run the API directly when needed:
+
+```cmd
+dotnet run --project src/Bitcoin.API/BitCoin.API.csproj
+```
 
 ## Authentication
 

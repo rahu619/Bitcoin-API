@@ -1,0 +1,13 @@
+**/.git
+**/.github
+**/.vs
+**/.vscode
+**/bin
+**/obj
+**/node_modules
+**/TestResults
+**/*.user
+**/*.suo
+**/*.rsuser
+**/*.nupkg
+README.md

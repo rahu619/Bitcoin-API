@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      TEST_PROJECT_DIR: Bitcoin.API.Test
+      TEST_PROJECT_DIR: tests/Bitcoin.API.Test
     permissions:
       contents: read
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
 
       - name: Restore solution dependencies
         run: |

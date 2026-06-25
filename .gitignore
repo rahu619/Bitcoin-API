@@ -10,6 +10,20 @@
 *.userosscache
 *.sln.docstates
 
+# macOS and editor metadata
+.DS_Store
+.AppleDouble
+.LSOverride
+.idea/
+.fleet/
+
+# VS Code local workspace settings (do not ignore recommended/extensions files)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -41,6 +55,15 @@ Generated\ Files/
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
+TestResults/
+*.trx
+
+# Coverage outputs
+coverage/
+coverage-results/
+*.coverage
+*.lcov
+coverage*.json
 
 # NUNIT
 *.VisualState.xml
@@ -58,6 +81,9 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+
+# With slnx as the standard solution format, keep accidental .sln files out.
+*.sln
 
 # StyleCop
 StyleCopReport.xml
