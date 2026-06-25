@@ -1,0 +1,46 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TEST_PROJECT_DIR: Bitcoin.API.Test
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore solution dependencies
+        run: |
+          if [ ! -d "$TEST_PROJECT_DIR" ]; then
+            echo "Configured test project directory $TEST_PROJECT_DIR does not exist."
+            exit 1
+          fi
+          project_files=$(find "$TEST_PROJECT_DIR" -maxdepth 1 -type f -name '*.csproj' | sort)
+          project_count=$(printf '%s\n' "$project_files" | sed '/^$/d' | wc -l)
+          if [ "$project_count" -eq 0 ]; then
+            echo "No *.csproj file found in existing directory $TEST_PROJECT_DIR. Add a project file or update TEST_PROJECT_DIR."
+            exit 1
+          fi
+          if [ "$project_count" -gt 1 ]; then
+            echo "Multiple project files found in $TEST_PROJECT_DIR. Set TEST_PROJECT_DIR to a directory with one project."
+            exit 1
+          fi
+          project_file="$project_files"
+          dotnet restore "$project_file"

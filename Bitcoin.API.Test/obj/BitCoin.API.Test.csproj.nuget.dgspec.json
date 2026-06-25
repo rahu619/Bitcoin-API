@@ -24,6 +24,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {
               "/home/runner/work/Bitcoin-API/Bitcoin-API/Bitcoin.API/BitCoin.API.csproj": {
@@ -42,10 +43,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "MSTest.TestAdapter": {
@@ -83,11 +85,11 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[10.0.2, 10.0.2]"
+              "version": "[10.0.9, 10.0.9]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[10.0.2, 10.0.2]"
+              "version": "[10.0.9, 10.0.9]"
             }
           ],
           "frameworkReferences": {
@@ -95,7 +97,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.301/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
@@ -119,6 +121,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -133,16 +136,17 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.100"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.DotNet.ILCompiler": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.2, )",
+              "version": "[10.0.9, )",
               "autoReferenced": true
             },
             "Microsoft.Extensions.Http.Resilience": {
@@ -152,7 +156,7 @@
             "Microsoft.NET.ILLink.Tasks": {
               "suppressParent": "All",
               "target": "Package",
-              "version": "[10.0.2, )",
+              "version": "[10.0.9, )",
               "autoReferenced": true
             }
           },
@@ -170,19 +174,31 @@
           "downloadDependencies": [
             {
               "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[10.0.2, 10.0.2]"
+              "version": "[10.0.9, 10.0.9]"
+            },
+            {
+              "name": "Microsoft.AspNetCore.App.Runtime.linux-x64",
+              "version": "[10.0.9, 10.0.9]"
             },
             {
               "name": "Microsoft.NETCore.App.Host.linux-x64",
-              "version": "[10.0.2, 10.0.2]"
+              "version": "[10.0.9, 10.0.9]"
             },
             {
               "name": "Microsoft.NETCore.App.Ref",
-              "version": "[10.0.2, 10.0.2]"
+              "version": "[10.0.9, 10.0.9]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.linux-x64",
+              "version": "[10.0.9, 10.0.9]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Runtime.NativeAOT.linux-x64",
+              "version": "[10.0.9, 10.0.9]"
             },
             {
               "name": "runtime.linux-x64.Microsoft.DotNet.ILCompiler",
-              "version": "[10.0.2, 10.0.2]"
+              "version": "[10.0.9, 10.0.9]"
             }
           ],
           "frameworkReferences": {
@@ -193,7 +209,12 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/10.0.301/PortableRuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }
