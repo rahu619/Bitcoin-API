@@ -2,8 +2,11 @@ using BitCoin.API.Configuration;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Serialization;
 using BitCoin.API.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +30,23 @@ builder.Services.AddControllers()
 #pragma warning restore IL2026
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddMemoryCache();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtSettings = builder.Configuration.GetRequiredSection("Jwt").Get<JwtSettings>()
+            ?? throw new InvalidOperationException("JWT authentication settings are missing.");
+
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+            ValidateLifetime = true
+        };
+    });
 builder.Services.AddAuthorization();
 builder.Services.AddProblemDetails();
 
@@ -48,6 +68,19 @@ builder.Services
     .Validate(
         settings => !string.IsNullOrWhiteSpace(settings.Url?.Base),
         "The external API base URL must be configured.")
+    .ValidateOnStart();
+builder.Services
+    .AddOptions<JwtSettings>()
+    .Bind(builder.Configuration.GetSection("Jwt"))
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Key) && settings.Key.Length >= 32,
+        "The JWT key must be at least 32 characters.")
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Issuer),
+        "The JWT issuer must be configured.")
+    .Validate(
+        settings => !string.IsNullOrWhiteSpace(settings.Audience),
+        "The JWT audience must be configured.")
     .ValidateOnStart();
 
 builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
@@ -83,6 +116,7 @@ else
 
 app.UseHttpsRedirection();
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text.Json;
 
+using BitCoin.API.Controllers;
 using BitCoin.API.Configuration;
 using BitCoin.API.Constants;
 using BitCoin.API.Interfaces;
@@ -10,6 +12,7 @@ using BitCoin.API.Models;
 using BitCoin.API.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -54,6 +57,17 @@ public class CoreTest
         mockCacheProvider.Verify(
             cache => cache.Set(CacheKeys.ApiLatest, It.Is<IReadOnlyList<BitCoinPriceIndexHistoryModel>>(list => list == result)),
             Times.Once);
+    }
+
+    [TestMethod]
+    public void Should_Require_Authorization_For_Api_Controllers()
+    {
+        var authorizeAttribute = typeof(BaseController)
+            .GetCustomAttributes(typeof(AuthorizeAttribute), inherit: true)
+            .Cast<AuthorizeAttribute>()
+            .SingleOrDefault();
+
+        Assert.IsNotNull(authorizeAttribute);
     }
 
     private sealed class StubBitcoinPriceIndexClient : IBitcoinPriceIndexClient
