@@ -11,4 +11,4 @@
 3. Summarize behavior changes and any known limitations.
 
 ## Repository-specific checks
-- Use `dotnet test Bitcoin.API.Test` for test validation.
+- Use `dotnet test tests/Bitcoin.API.Test` for test validation.

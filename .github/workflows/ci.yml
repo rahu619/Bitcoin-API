@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore BitCoin.API.slnx
+
+      - name: Build
+        run: dotnet build BitCoin.API.slnx -c Release --no-restore
+
+      - name: Test
+        run: dotnet test tests/Bitcoin.API.Test/BitCoin.API.Test.csproj -c Release --no-build --verbosity normal
