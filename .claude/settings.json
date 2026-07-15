@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /Users/rahulrajan/projects/Bitcoin-API *)",
+      "Bash(dotnet format *)",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://127.0.0.1:15999 ConnectionStrings__cache=localhost:6379 nohup dotnet run --project src/BitCoin.API/BitCoin.API.csproj --no-build -c Release)",
+      "Bash(curl -s -o /dev/null -w \"healthz: %{http_code}\\\\n\" http://127.0.0.1:15999/healthz)",
+      "Bash(curl -s -o /dev/null -w \"unauthenticated latest: %{http_code}\\\\n\" http://127.0.0.1:15999/api/v1/bitcoin/latest)",
+      "Bash(pkill -f \"BitCoin.API.dll\")",
+      "Bash(ASPNETCORE_ENVIRONMENT=Development ASPNETCORE_URLS=http://127.0.0.1:15999 ConnectionStrings__cache=localhost:6379 nohup dotnet run --project src/BitCoin.API/BitCoin.API.csproj --no-build --no-launch-profile -c Release)"
+    ],
+    "additionalDirectories": [
+      "/Users/rahulrajan/projects/Bitcoin-API/src/*"
+    ]
+  }
+}

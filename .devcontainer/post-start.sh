@@ -13,13 +13,13 @@ is_running() {
 }
 
 start_api() {
-  if is_running "dotnet run --project src/Bitcoin.API/BitCoin.API.csproj"; then
+  if is_running "dotnet run --project src/BitCoin.API/BitCoin.API.csproj"; then
     echo "[post-start] API already running"
     return
   fi
 
   echo "[post-start] starting API on port 8080"
-  nohup dotnet run --project src/Bitcoin.API/BitCoin.API.csproj --no-build >"$LOG_DIR/api.log" 2>&1 &
+  nohup dotnet run --project src/BitCoin.API/BitCoin.API.csproj --no-build >"$LOG_DIR/api.log" 2>&1 &
 }
 
 start_apphost() {

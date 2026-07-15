@@ -4,10 +4,15 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="./tests/Bitcoin.API.Test/BitCoin.API.Test.csproj" />
-  <Project Path="./src/Bitcoin.API/BitCoin.API.csproj">
+  <Project Path="./tests/BitCoin.API.Tests/BitCoin.API.Tests.csproj" />
+  <Project Path="./tests/BitCoin.Application.Tests/BitCoin.Application.Tests.csproj" />
+  <Project Path="./tests/BitCoin.Infrastructure.Tests/BitCoin.Infrastructure.Tests.csproj" />
+  <Project Path="./src/BitCoin.API/BitCoin.API.csproj">
     <Platform Solution="*|x86" Project="x86" />
   </Project>
   <Project Path="src/BitCoin.AppHost/BitCoin.AppHost.csproj" />
   <Project Path="src/BitCoin.ServiceDefaults/BitCoin.ServiceDefaults.csproj" />
+  <Project Path="src/BitCoin.Domain/BitCoin.Domain.csproj" />
+  <Project Path="src/BitCoin.Application/BitCoin.Application.csproj" />
+  <Project Path="src/BitCoin.Infrastructure/BitCoin.Infrastructure.csproj" />
 </Solution>

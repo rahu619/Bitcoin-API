@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Mints a short-lived HS256 JWT signed with the same key configured in
-# src/Bitcoin.API/appsettings.json (Jwt:Key), for local/dev testing only.
+# src/BitCoin.API/appsettings.json (Jwt:Key), for local/dev testing only.
 #
 # Usage:
 #   ./scripts/generate-dev-jwt.sh
