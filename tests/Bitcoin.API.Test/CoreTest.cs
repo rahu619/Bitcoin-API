@@ -21,7 +21,8 @@ namespace BitCoin.API.Test;
 [TestClass]
 public class CoreTest
 {
-    private const string HistoricalPayload = "{\n  \"bpi\": {\n    \"2021-10-01\": 43823.5533,\n    \"2021-10-02\": 47071.0575,\n    \"2021-09-30\": 41501.6017\n  },\n  \"disclaimer\": \"For testing only\",\n  \"time\": {\n    \"updated\": \"Oct 3, 2021\",\n    \"updatedISO\": \"2021-10-03T00:03:00+00:00\"\n  }\n}";
+    // Unix ms timestamps for 2021-09-30, 2021-10-01, 2021-10-02 (UTC midnight), matching CoinGecko's market_chart shape.
+    private const string HistoricalPayload = "{\n  \"prices\": [\n    [1632960000000, 41501.6017],\n    [1633046400000, 43823.5533],\n    [1633132800000, 47071.0575]\n  ]\n}";
 
     [TestMethod]
     public async Task ShouldFetchBitcoinHistoricalApiSuccessfully()
@@ -36,7 +37,7 @@ public class CoreTest
         {
             Interval = 5,
             Count = 2,
-            Url = new Url { Base = "https://api.coindesk.com/v1/bpi", Historical = "/historical/close.json" }
+            Url = new Url { Base = "https://api.coingecko.com/api/v3", Historical = "/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily" }
         };
 
         var backgroundService = new BitCoinApiService(

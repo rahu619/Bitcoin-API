@@ -7,12 +7,20 @@ API for retrieving the latest Bit coin price.
 
 Open this repository in a Dev Container (VS Code command: "Dev Containers: Reopen in Container").
 
+Requires Docker (or another container runtime) since the AppHost provisions a Redis container for the
+distributed cache.
+
 ```cmd
 dotnet restore BitCoin.API.slnx
 dotnet run --project src/BitCoin.AppHost
 ``` 
 
-You can still run the API directly when needed:
+This opens the [Aspire dashboard](https://aka.ms/dotnet/aspire/dashboard) with traces, metrics, and
+structured logs for both the API and its Redis cache. See [BitCoin.API.http](src/Bitcoin.API/BitCoin.API.http)
+for ready-to-run requests to exercise it.
+
+You can still run the API directly when needed, but you'll need a Redis instance reachable via the
+`ConnectionStrings:cache` configuration value (e.g. `ConnectionStrings__cache=localhost:6379`):
 
 ```cmd
 dotnet run --project src/Bitcoin.API/BitCoin.API.csproj

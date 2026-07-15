@@ -1,0 +1,44 @@
+@HostAddress = https://localhost:8443
+@Token = {{$processEnv JWT_DEV_TOKEN}}
+
+### Anonymous liveness probe.
+GET {{HostAddress}}/healthz
+
+### Aspire-only health rollup (Development environment only, see MapDefaultEndpoints).
+GET {{HostAddress}}/health
+
+### Get the latest cached Bitcoin prices.
+# The background service (BitCoinApiService) polls CoinGecko on ExternalAPISettings:Interval
+# and caches the result; this just reads the cache via BitcoinPriceQueryService.
+#
+# Requires a bearer token because BaseController is [Authorize]. Generate one with:
+#   export JWT_DEV_TOKEN=$(./scripts/generate-dev-jwt.sh)
+# then re-open/re-run this request so the REST Client extension picks up the env var.
+# (VS Code: humao.rest-client. Visual Studio 2022 17.11+ has native .http support too,
+# but reads variables from http-client.env.json instead of $processEnv — see README below.)
+GET {{HostAddress}}/api/v1/bitcoin/latest
+Authorization: Bearer {{Token}}
+
+### Same request, explicit alternate route.
+GET {{HostAddress}}/api/v1/bitcoin
+Authorization: Bearer {{Token}}
+
+# ---
+# Run the whole stack through Aspire (recommended, gives you traces/metrics/logs), requires Docker
+# since the AppHost provisions the "cache" Redis container:
+#   dotnet run --project src/BitCoin.AppHost
+# Open the Aspire dashboard link printed in the console. Two resources will be running:
+#   - "cache"       the Redis container backing IDistributedCache.
+#   - "bitcoin-api" this API.
+# Fire these requests and watch:
+#   - Traces: BitcoinPriceIndex.Fetch span (custom) with a nested HTTP GET span to
+#     api.coingecko.com, plus the inbound ASP.NET Core request span for /api/v1/bitcoin/latest,
+#     which itself nests a Redis GET span (from Aspire.StackExchange.Redis.DistributedCaching).
+#   - Metrics: bitcoin.price_fetch.success/failure, bitcoin.price_fetch.duration,
+#     bitcoin.price.latest (gauge), plus the built-in ASP.NET Core/HttpClient/runtime metrics.
+#   - Logs: cache set/hit/miss entries (BitCoin.API.Services.RedisCacheProvider) and the
+#     historical-fetch request/response entries (BitCoin.API.Services.BitcoinPriceIndexClient),
+#     all correlated to the same trace ID (Debug level, already enabled for BitCoin.API.* in
+#     appsettings.Development.json).
+#   - Health: /health now also reports Redis reachability (AspNetCore.HealthChecks.Redis),
+#     wired up automatically by the Aspire Redis client integration.

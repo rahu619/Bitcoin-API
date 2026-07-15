@@ -54,7 +54,9 @@ public static class Extensions
             {
                 metrics.AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    // Retry/circuit-breaker/timeout metrics from AddStandardResilienceHandler() (Polly v8).
+                    .AddMeter("Polly");
             })
             .WithTracing(tracing =>
             {

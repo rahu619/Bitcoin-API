@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using BitCoin.API.Configuration;
 using BitCoin.API.Constants;
+using BitCoin.API.Diagnostics;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Models;
 using Microsoft.Extensions.Hosting;
@@ -86,18 +88,39 @@ public sealed partial class BitCoinApiService : BackgroundService
     /// </summary>
     internal async Task ExecuteIterationAsync(CancellationToken cancellationToken = default)
     {
-        var content = await _priceIndexClient.GetHistoricalAsync(cancellationToken).ConfigureAwait(false);
-        var filtered = FilterContent(content);
+        using var activity = BitcoinApiTelemetry.ActivitySource.StartActivity(
+            "BitcoinPriceIndex.Fetch", ActivityKind.Internal);
+        var stopwatch = Stopwatch.StartNew();
 
-        if (filtered.Count == 0)
+        try
         {
-            Log.NoPriceIndexDataRetrieved(_logger);
-            return;
-        }
+            var content = await _priceIndexClient.GetHistoricalAsync(cancellationToken).ConfigureAwait(false);
+            var filtered = FilterContent(content);
 
-        Volatile.Write(ref _latestResult, filtered);
-        _cacheProvider.SetValue(CacheKeys.ApiLatest, filtered);
-        Log.FetchedItemCount(_logger, filtered.Count);
+            if (filtered.Count == 0)
+            {
+                activity?.SetTag("bitcoin.result_count", 0);
+                activity?.SetStatus(ActivityStatusCode.Error, "No price index data retrieved.");
+                BitcoinApiTelemetry.RecordFetch(success: false, stopwatch.Elapsed.TotalMilliseconds);
+                Log.NoPriceIndexDataRetrieved(_logger);
+                return;
+            }
+
+            Volatile.Write(ref _latestResult, filtered);
+            _cacheProvider.SetValue(CacheKeys.ApiLatest, filtered);
+
+            activity?.SetTag("bitcoin.result_count", filtered.Count);
+            activity?.SetTag("bitcoin.latest_price_usd", filtered[0].USD);
+            activity?.SetStatus(ActivityStatusCode.Ok);
+            BitcoinApiTelemetry.RecordFetch(success: true, stopwatch.Elapsed.TotalMilliseconds);
+            Log.FetchedItemCount(_logger, filtered.Count);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+            BitcoinApiTelemetry.RecordFetch(success: false, stopwatch.Elapsed.TotalMilliseconds);
+            throw;
+        }
     }
 
     /// <summary>
@@ -106,7 +129,7 @@ public sealed partial class BitCoinApiService : BackgroundService
     /// <param name="data">The raw API response.</param>
     private IReadOnlyList<BitCoinPriceIndexHistoryModel> FilterContent(BitCoinPriceIndexModel? data)
     {
-        if (data?.BitCoinPriceIndexHistory is not { Count: > 0 } datePriceCollection)
+        if (data?.Prices is not { Count: > 0 } pricePoints)
         {
             Log.MappingSourceDataMissing(_logger);
             return EmptyResult;
@@ -120,17 +143,19 @@ public sealed partial class BitCoinApiService : BackgroundService
 
         Log.BitcoinApiTaskRunning(_logger);
 
-        var resultCount = Math.Min(_apiSettings.Count, datePriceCollection.Count);
+        var resultCount = Math.Min(_apiSettings.Count, pricePoints.Count);
         var results = new List<BitCoinPriceIndexHistoryModel>(resultCount);
 
-        foreach (var (date, value) in datePriceCollection
-                     .OrderByDescending(pair => pair.Key, StringComparer.Ordinal)
+        foreach (var point in pricePoints
+                     .Where(point => point.Length == 2)
+                     .OrderByDescending(point => point[0])
                      .Take(resultCount))
         {
+            var date = DateTimeOffset.FromUnixTimeMilliseconds((long)point[0]).UtcDateTime.ToString("yyyy-MM-dd");
             results.Add(new BitCoinPriceIndexHistoryModel
             {
                 Date = date,
-                USD = value
+                USD = (decimal)point[1]
             });
         }
 

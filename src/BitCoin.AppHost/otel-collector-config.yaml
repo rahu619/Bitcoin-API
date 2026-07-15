@@ -1,0 +1,51 @@
+# OTLP pipeline: API -> this collector -> Aspire dashboard.
+# Traces are tail-sampled so the dashboard only stores what's worth looking at:
+# every error, every slow request, plus a 50% baseline sample of everything else.
+# Metrics and logs pass through untouched (no volume problem to solve there).
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+processors:
+  batch: {}
+
+  # tail_sampling:
+  #   # Traces wait here until the root span ends (or this timeout elapses) before a
+  #   # keep/drop decision is made, so dashboard traces lag live requests by up to this long.
+  #   decision_wait: 3s
+  #   policies:
+  #     - name: errors
+  #       type: status_code
+  #       status_code:
+  #         status_codes: [ERROR]
+  #     - name: slow-requests
+  #       type: latency
+  #       latency:
+  #         threshold_ms: 1000
+  #     - name: baseline-sample
+  #       type: probabilistic
+  #       probabilistic:
+  #         sampling_percentage: 50
+
+exporters:
+  otlp/aspire:
+    endpoint: ${env:ASPIRE_ENDPOINT}
+    headers:
+      x-otlp-api-key: ${env:ASPIRE_API_KEY}
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/aspire]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/aspire]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/aspire]

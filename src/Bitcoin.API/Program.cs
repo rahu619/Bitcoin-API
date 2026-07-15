@@ -1,4 +1,5 @@
 using BitCoin.API.Configuration;
+using BitCoin.API.Diagnostics;
 using BitCoin.API.Interfaces;
 using BitCoin.API.Serialization;
 using BitCoin.API.Services;
@@ -7,11 +8,23 @@ using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
+// Register the app-specific ActivitySource/Meter so the background fetch spans
+// and business metrics (bitcoin.price_fetch.*, bitcoin.price.latest) surface in the Aspire dashboard.
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddSource(BitcoinApiTelemetry.ActivitySourceName))
+    .WithMetrics(metrics => metrics.AddMeter(BitcoinApiTelemetry.MeterName));
+
+// Redis-backed IDistributedCache, provisioned by the AppHost "cache" resource.
+// Wires up health checks and tracing/logging automatically (Aspire.StackExchange.Redis.DistributedCaching).
+builder.AddRedisDistributedCache("cache");
 
 builder.Services.AddCors(options =>
 {
@@ -40,7 +53,6 @@ builder.Services.AddHttpLogging(options =>
         | HttpLoggingFields.ResponseStatusCode
         | HttpLoggingFields.Duration;
 });
-builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -94,7 +106,7 @@ builder.Services
         "The JWT audience must be configured.")
     .ValidateOnStart();
 
-builder.Services.AddSingleton<ICacheProvider, InMemoryCacheProvider>();
+builder.Services.AddSingleton<ICacheProvider, RedisCacheProvider>();
 builder.Services.AddSingleton<IBitcoinPriceQueryService, BitcoinPriceQueryService>();
 builder.Services
     .AddHttpClient<IBitcoinPriceIndexClient, BitcoinPriceIndexClient>("BitcoinPriceIndex")
@@ -110,6 +122,9 @@ builder.Services
 
         client.BaseAddress = new Uri(baseAddress, UriKind.Absolute);
         client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+        // CoinGecko's edge (Cloudflare) returns 403 for requests with no User-Agent header,
+        // which is what HttpClient sends by default.
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("BitCoin.API/1.0 (+https://github.com/rahu619/Bitcoin-API)");
     })
     .AddStandardResilienceHandler();
 builder.Services.AddHostedService<BitCoinApiService>();

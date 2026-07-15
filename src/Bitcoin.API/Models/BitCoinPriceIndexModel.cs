@@ -4,27 +4,16 @@ using System.Text.Json.Serialization;
 namespace BitCoin.API.Models;
 
 /// <summary>
-/// The DTO for Bitcoin price index model.
+/// The DTO for the CoinGecko market chart response (https://api.coingecko.com/api/v3/coins/bitcoin/market_chart).
+/// No API key is required for this endpoint on the free tier.
 /// </summary>
 public sealed record class BitCoinPriceIndexModel
 {
     /// <summary>
-    /// Collection of historical data
+    /// Historical price points as [unixTimestampMs, priceUsd] pairs, newest last.
     /// </summary>
-    [JsonPropertyName("bpi")]
-    public IReadOnlyDictionary<string, decimal>? BitCoinPriceIndexHistory { get; init; }
-
-    /// <summary>
-    /// Disclaimer detail
-    /// </summary>
-    [JsonPropertyName("disclaimer")]
-    public string? Disclaimer { get; init; }
-
-    /// <summary>
-    /// Published time details
-    /// </summary>
-    [JsonPropertyName("time")]
-    public BitCoinPriceIndexTimeModel? BitCoinPriceIndexTime { get; init; }
+    [JsonPropertyName("prices")]
+    public IReadOnlyList<double[]>? Prices { get; init; }
 }
 
 /// <summary>
@@ -41,22 +30,4 @@ public sealed record class BitCoinPriceIndexHistoryModel
     /// The US Dollar value
     /// </summary>
     public decimal USD { get; init; }
-}
-
-/// <summary>
-/// DTO for updated time information
-/// </summary>
-public sealed record class BitCoinPriceIndexTimeModel
-{
-    /// <summary>
-    /// The published datetime
-    /// </summary>
-    [JsonPropertyName("updated")]
-    public string? Updated { get; init; }
-
-    /// <summary>
-    /// The publiched datetime in ISO string format.
-    /// </summary>
-    [JsonPropertyName("updatedISO")]
-    public string? UpdatedISO { get; init; }
 }
