@@ -6,7 +6,7 @@
 
 ## Architecture
 
-Clean/onion architecture, dependencies flow inward only:
+Onion architecture, dependencies flow inward:
 
 ```mermaid
 flowchart TD
