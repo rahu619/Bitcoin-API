@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <!-- CA1707: underscore test-method naming (Given_When_Then) is the established convention here.
          CA1001: disposable fields are cleaned up via [TestCleanup], not IDisposable, under MSTest's lifecycle. -->
