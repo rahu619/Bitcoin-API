@@ -3,6 +3,7 @@ using System.Text;
 using BitCoin.API.BackgroundServices;
 using BitCoin.API.Configuration;
 using BitCoin.Application.DependencyInjection;
+using BitCoin.Domain;
 using BitCoin.Infrastructure.DependencyInjection;
 using BitCoin.Infrastructure.Serialization;
 
@@ -26,6 +27,12 @@ builder.Services.AddOpenTelemetry()
 // Redis-backed IDistributedCache, provisioned by the AppHost "cache" resource.
 // Wires up health checks and tracing/logging automatically (Aspire.StackExchange.Redis.DistributedCaching).
 builder.AddRedisDistributedCache("cache");
+
+// HybridCache layers an in-process L1 in front of the Redis L2 registered above (auto-detected),
+// so concurrent requests for the same key are served from memory and coalesced instead of each
+// making its own Redis round-trip.
+builder.Services.AddHybridCache()
+    .AddSerializer<IReadOnlyList<BitCoinPriceIndexHistoryModel>, BitcoinHybridCacheSerializer>();
 
 builder.Services
     .AddOptions<CorsSettings>()

@@ -12,7 +12,7 @@ public static class InfrastructureServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services)
     {
-        services.AddSingleton<ICacheProvider, RedisCacheProvider>();
+        services.AddSingleton<ICacheProvider, CacheProvider>();
 
         services
             .AddHttpClient<IBitcoinPriceIndexClient, BitcoinPriceIndexClient>("BitcoinPriceIndex")
